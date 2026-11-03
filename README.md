@@ -3,8 +3,7 @@
 Quotes from the Douay-Rheims Bible, the Catechism of the Council of Trent
 (McHugh & Callan, 1923) and the Catechism of the Catholic Church (Zig 0.17.0).
 
-    zig build                      # ReleaseSafe by default
-    cp zig-out/bin/dkscripture ~/.local/bin/
+    zig build -p ~/.local          # installs to ~/.local/bin, adds login hook to ~/.bashrc
     dkscripture fetch              # one-time download (~5 min, mostly CCC pages)
 
     dkscripture                    # one random quote

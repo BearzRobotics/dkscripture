@@ -6,7 +6,7 @@ Quotes from the Douay-Rheims Bible, the Catechism of the Council of Trent
     zig build -p ~/.local          # installs to ~/.local/bin, adds login hook to ~/.bashrc
     dkscripture fetch              # one-time download (~5 min, mostly CCC pages)
 
-    dkscripture                    # one random quote
+    dkscripture                    # one random quote (Scripture 50%, each catechism 25%)
     dkscripture dr ccc             # one from each, on a shared random topic
     dkscripture all                # one from every source, same topic
     dkscripture -t mercy dr ccc    # pick the topic yourself

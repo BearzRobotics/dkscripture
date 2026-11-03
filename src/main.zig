@@ -14,10 +14,12 @@ const Source = struct {
     id: []const u8,
     name: []const u8,
     kind: enum { dr, trent, ccc, custom },
+    /// Relative chance of being picked when no source is named.
+    weight: usize = 1,
 };
 
 const sources = [_]Source{
-    .{ .id = "dr", .name = "Douay-Rheims Bible", .kind = .dr },
+    .{ .id = "dr", .name = "Douay-Rheims Bible", .kind = .dr, .weight = 2 },
     .{ .id = "trent", .name = "Catechism of the Council of Trent", .kind = .trent },
     .{ .id = "ccc", .name = "Catechism of the Catholic Church", .kind = .ccc },
     // .{ .id = "fathers", .name = "Church Fathers", .kind = .custom },
@@ -295,7 +297,17 @@ fn quoteCommand(init: std.process.Init, args: []const [:0]const u8, data: []cons
             }
         }
         if (n == 0) return firstRunHint(out);
-        sel[0] = avail[randomBelow(io, n)];
+        // Weighted pick (Scripture counts double) so it isn't drowned out.
+        var total: usize = 0;
+        for (avail[0..n]) |s| total += sources[s].weight;
+        var roll = randomBelow(io, total);
+        for (avail[0..n]) |s| {
+            if (roll < sources[s].weight) {
+                sel[0] = s;
+                break;
+            }
+            roll -= sources[s].weight;
+        }
         n_sel = 1;
     }
     if (n_sel == 0) return firstRunHint(out);

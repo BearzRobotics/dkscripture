@@ -4,7 +4,6 @@ Quotes from the Douay-Rheims Bible, the Catechism of the Council of Trent
 (McHugh & Callan, 1923) and the Catechism of the Catholic Church (Zig 0.17.0).
 
     zig build -p ~/.local          # installs to ~/.local/bin, adds login hook to ~/.bashrc
-    dkscripture fetch              # one-time download (~5 min, mostly CCC pages)
 
     dkscripture                    # one random quote (Scripture 50%, each catechism 25%)
     dkscripture dr ccc             # one from each, on a shared random topic
@@ -16,7 +15,10 @@ Add `command -v dkscripture >/dev/null && dkscripture` to `~/.bashrc` to
 see one at every login.
 
 ## How it works
-- `fetch` saves the original texts in `~/.local/share/dkscripture/raw/`.
+- The finished database (`data/quotes.tsv`) is compiled into the program, so it
+  works at once with no download. A `quotes.tsv` in the data directory (made by
+  `fetch`/`build`) takes priority over it.
+- `fetch` (optional, ~5 min, mostly CCC pages) saves the original texts in `~/.local/share/dkscripture/raw/`.
 - `build` extracts candidate passages, tags each with up to two topics by
   keyword (see `topics` in `src/db.zig`), drops passages that match no topic,
   and writes the database `quotes.tsv`:
@@ -37,5 +39,6 @@ uncomment the `fathers` line in `sources` in `src/main.zig`, and run
 ## Sources
 - Douay-Rheims: Project Gutenberg #1581 (public domain)
 - Roman Catechism: archive.org scan, OCR filtered to clean paragraphs
-- CCC: vatican.va. Copyright Libreria Editrice Vaticana; downloaded for
-  personal use only, do not redistribute the data files.
+- CCC: vatican.va. Copyright Libreria Editrice Vaticana; the built-in
+  database holds excerpts for personal use; get the publisher's permission before
+  distributing the program or `data/quotes.tsv` outside your own machines.

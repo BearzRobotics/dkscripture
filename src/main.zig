@@ -26,6 +26,9 @@ const sources = [_]Source{
     // .{ .id = "saints", .name = "Saints", .kind = .custom },
 };
 
+/// The finished database, compiled in (see build.zig).
+const embedded_quotes = @embedFile("quotes.tsv");
+
 const dr_url = "https://www.gutenberg.org/cache/epub/1581/pg1581.txt";
 const trent_url = "https://archive.org/download/catechismofcounc0000cath/catechismofcounc0000cath_djvu.txt";
 const ccc_base = "https://www.vatican.va/archive/ENG0015/";
@@ -47,7 +50,8 @@ const usage =
     \\  dkscripture all                one quote from every source, same topic
     \\  dkscripture -t mercy [sources] choose the topic yourself
     \\  dkscripture topics             list topics and how many quotes each has
-    \\  dkscripture fetch [-f]         download the source texts (first-time setup)
+    \\  dkscripture fetch [-f]         re-download the source texts and rebuild the
+    \\                                 database (optional: one is built in)
     \\  dkscripture build              rebuild the quote database from saved sources
     \\  dkscripture where              show where the data is stored
     \\
@@ -101,7 +105,7 @@ fn fail(out: *Io.Writer, comptime fmt: []const u8, args: anytype) noreturn {
 }
 
 fn firstRunHint(out: *Io.Writer) !void {
-    try out.writeAll("No quotes yet. Run `dkscripture fetch` once to download the sources.\n");
+    try out.writeAll("No quotes found. Run `dkscripture fetch` to download the sources and build them.\n");
 }
 
 fn dataDir(init: std.process.Init, arena: Allocator) ![]const u8 {
@@ -174,7 +178,9 @@ fn sourceIndex(id: []const u8) ?usize {
 fn loadDb(gpa: Allocator, io: Io, data: []const u8) !Db {
     const p = try path(gpa, data, &.{"quotes.tsv"});
     defer gpa.free(p);
-    const body = try readAll(gpa, io, p);
+    // A database the user built with `fetch`/`build` wins; otherwise the one
+    // compiled into the program is used.
+    const body = readAll(gpa, io, p) catch try gpa.dupe(u8, embedded_quotes);
     errdefer gpa.free(body);
 
     var list: std.ArrayList(Entry) = .empty;

@@ -9,8 +9,6 @@ const notice_sh =
     \\  echo '  export PATH="$HOME/.local/bin:$PATH"'
     \\  echo
     \\fi
-    \\echo "First time: run  dkscripture fetch  (one-time download, ~5 min)."
-    \\echo
     \\rc="$HOME/.bashrc"
     \\hook='command -v dkscripture >/dev/null && dkscripture'
     \\if [ -f "$rc" ] && grep -qF "$hook" "$rc"; then
@@ -31,13 +29,17 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.option(std.builtin.Optimize, "optimize", "Optimization mode (default: safe)") orelse .safe;
 
+    const root = b.createModule(.{
+        .root_source_file = b.path("src/main.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    // The finished quote database is built into the program, so nothing has to
+    // be downloaded. `dkscripture fetch` can still rebuild it from newer sources.
+    root.addAnonymousImport("quotes.tsv", .{ .root_source_file = b.path("data/quotes.tsv") });
     const exe = b.addExecutable(.{
         .name = "dkscripture",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/main.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
+        .root_module = root,
     });
     const install_exe = b.addInstallArtifact(exe, .{});
     b.getInstallStep().dependOn(&install_exe.step);
